@@ -51,6 +51,11 @@ th{background:#1B3358;color:#fff;text-align:left}
 <div class="wrap">
   <div class="grid" id="kpi"></div>
   <div class="panel">
+    <h2>Sərbəst anbar qalığı (5_Saldo · canlı)</h2>
+    <div id="saldoLive"></div>
+    <p class="note" id="saldoNote">Mənbə: data.js (Excel-dən avtomatik). Excel dəyişəndə data.js yenilənir və GitHub-a göndərilir.</p>
+  </div>
+  <div class="panel">
     <h2>İş mərkəzləri — status və tutum</h2>
     <div id="wc"></div>
     <p class="note">Aktiv = icrada/hazır · Passiv = bu növbədə iş yox · Dayanma (naladka) = ayarlama, təmizlik, alət/bıçaq dəyişimi, yeni partiya hazırlığı — effektiv iş saatına daxil deyil; ayrıca dəqiqə ilə izlənilir.</p>
@@ -58,13 +63,14 @@ th{background:#1B3358;color:#fff;text-align:left}
   <div class="panel">
     <h2>İstehsal sabitliyi (CV) — fakt saat nümunəsi</h2>
     <div id="cv"></div>
-    <p class="note">CV = σ / orta. &lt;10% sabit · 10–25% orta · &gt;25% yüksək dəyişkənlik (sadə qayda).</p>
+    <p class="note">CV = σ / orta. <10% sabit · 10–25% orta · >25% yüksək dəyişkənlik (sadə qayda).</p>
   </div>
   <div class="panel">
     <h2>İşçi / norma briqadası</h2>
     <div id="crew"></div>
   </div>
 </div>
+<script src="data.js"></script>
 <script>
 
 function r4(x){const n=Number(x);if(!isFinite(n))return x;return Math.round(n*10000)/10000}
@@ -97,7 +103,7 @@ function init(){
   let t=`<table><tr><th>İş_merkezi</th><th>Ad</th><th>Status</th><th>Yük %</th><th>Cari dolu (s)</th><th>Plan qalıq (s)</th><th>Boşalır</th><th>Dayanma</th><th>İşçi</th></tr>`;
   WC.forEach(w=>{
     const st=w.status==='Aktiv'?'ok':(w.status==='Dayanma'?'warn':'');
-    const free=w.busy; // saat sonra boşluq pəncərəsi
+    const free=w.busy;
     t+=`<tr>
       <td>${w.dm}</td><td>${w.ad}</td>
       <td class="${st}">${w.status}</td>
@@ -124,6 +130,18 @@ function init(){
     ${WC.map(w=>`<tr><td>${w.dm}</td><td>${w.isci}</td><td>${w.status}</td>
       <td>${w.status==='Passiv'?'Briqada bu növbədə təyin olunmayıb':(w.status==='Dayanma'?'Dayanma müddətində gözləmə': 'İcrada')}</td></tr>`).join('')}
     </table>`;
+
+  // Sərbəst stok cədvəli
+  if(window.STOXASTIK_DATA && STOXASTIK_DATA.saldo){
+    const rows = STOXASTIK_DATA.saldo.map(r=>{
+      const cls = r.Serbest_kifayet==='Kifayət'?'ok':'bad';
+      return `<tr><td>${r.Mal_Kodu}</td><td>${r.Mal_Adi||''}</td><td>${r.Serbest}</td><td>${r.Min_stok}</td><td class="${cls}">${r.Serbest_kifayet}</td><td>${r.Cem}</td></tr>`;
+    }).join('');
+    document.getElementById('saldoLive').innerHTML = `<table><tr><th>Mal_Kodu</th><th>Ad</th><th>Sərbəst</th><th>Min</th><th>Kifayət?</th><th>Cəm</th></tr>${rows}</table>`;
+    document.getElementById('saldoNote').textContent = 'Yenilənmə: ' + (STOXASTIK_DATA.updated||'') + ' · ' + (STOXASTIK_DATA.source||'');
+  } else {
+    document.getElementById('saldoLive').innerHTML = '<p>data.js yüklənmədi</p>';
+  }
 }
 init();
 </script>
