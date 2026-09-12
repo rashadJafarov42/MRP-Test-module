@@ -1,6 +1,6 @@
 window.STOXASTIK_DATA = {
-  "updated": "2026-09-12 13:50",
-  "source": "Stoxastik_ERP_Baza_Birlesmis.xlsx · 5_Saldo",
+  "updated": "2026-09-12 14:14",
+  "source": "Stoxastik_ERP_Baza_Birlesmis.xlsx · 5_Saldo (GIRIS_ALIS AL-1003)",
   "saldo": [
     {
       "Mal_Kodu": "XM.PLD.01.005",
@@ -117,6 +117,45 @@ window.STOXASTIK_DATA = {
       "Blok_QC": 0,
       "Cem": 16,
       "Min_stok": 5,
+      "Serbest_kifayet": "Kifayət"
+    },
+    {
+      "Mal_Kodu": "YF.ELK.01.300",
+      "Mal_Adi": "Elektron idarə modulu yarımfabrikatı",
+      "Sinif": "YF",
+      "Vahid": "əd",
+      "Serbest": 15.0,
+      "Rezerv": 0,
+      "Blok_Zay": 0.0,
+      "Blok_QC": 0,
+      "Cem": 15,
+      "Min_stok": 12,
+      "Serbest_kifayet": "Kifayət"
+    },
+    {
+      "Mal_Kodu": "YF.QAP.01.400",
+      "Mal_Adi": "Qapaq komplekti yarımfabrikatı",
+      "Sinif": "YF",
+      "Vahid": "əd",
+      "Serbest": 12.0,
+      "Rezerv": 0,
+      "Blok_Zay": 0.0,
+      "Blok_QC": 0,
+      "Cem": 12,
+      "Min_stok": 9,
+      "Serbest_kifayet": "Kifayət"
+    },
+    {
+      "Mal_Kodu": "XM.BRT.01.006",
+      "Mal_Adi": "Bolt dəsti M6 (komplekt)",
+      "Sinif": "XM",
+      "Vahid": "dəst",
+      "Serbest": 120.0,
+      "Rezerv": 0,
+      "Blok_Zay": 0.0,
+      "Blok_QC": 0,
+      "Cem": 120,
+      "Min_stok": 100,
       "Serbest_kifayet": "Kifayət"
     }
   ]
