@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>İş axını — Başlat / Bitir · QC · Devretmə</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1B2430;--soft:#57626F;--faint:#8A94A0;--bg:#F0F3F7;--panel:#fff;--border:#D5DCE5;--plan:#1B3358;--ok:#1E7D46;--warn:#C47A00;--bad:#B33A3A;--teal:#0E7C86;--qc:#6B5A9C;--sans:'IBM Plex Sans',system-ui,sans-serif;--mono:'IBM Plex Mono',monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14px}
+.header{background:var(--panel);border-bottom:2px solid var(--ink);padding:12px 18px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:20}
+.header h1{font-size:1.05rem}
+.sub{font-size:.78rem;color:var(--soft)}
+.nav a,.btn{font-size:.78rem;text-decoration:none;color:var(--plan);border:1px solid var(--border);padding:7px 11px;border-radius:6px;background:#fff;cursor:pointer;font-family:var(--sans)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.go{background:var(--ok);color:#fff;border-color:var(--ok);font-weight:600}
+.btn.stop{background:var(--plan);color:#fff;border-color:var(--plan);font-weight:600}
+.btn.qc{background:var(--qc);color:#fff;border-color:var(--qc);font-weight:600}
+.btn.bad{background:var(--bad);color:#fff;border-color:var(--bad)}
+.btn.muted{background:#EEF1F5}
+.wrap{max-width:1000px;margin:0 auto;padding:14px 14px 48px}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px}
+.panel h2{font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;color:var(--faint);margin-bottom:10px}
+.controls{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:start}
+.controls > div{display:flex;flex-direction:column}
+.controls label{min-height:1.1rem;margin-bottom:4px}
+.controls select{height:38px}
+@media(max-width:700px){.controls{grid-template-columns:1fr}}
+label{font-size:.7rem;color:var(--faint);font-weight:600;display:block;margin-bottom:4px}
+select{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-family:var(--sans)}
+.linked{font-size:.8rem;color:var(--soft);margin-top:6px;font-family:var(--mono)}
+.who{font-family:var(--mono);font-size:.85rem;padding:10px 12px;background:#EEF6FF;border-radius:8px;border-left:4px solid var(--plan);margin-bottom:12px}
+.flow{display:flex;flex-direction:column}
+.step{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center;padding:12px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;background:#fff}
+.step.done{background:#E8F8EF;border-color:#A8D5B5}
+.step.active{background:#FFF8E6;border-color:#E0C36A;box-shadow:0 0 0 2px rgba(196,122,0,.2)}
+.step.wait{opacity:.55}
+.step.qc-gate{border-left:4px solid var(--qc)}
+.step .num{font-family:var(--mono);font-weight:700;color:var(--faint)}
+.step .t{font-weight:600;font-size:.9rem}
+.step .m{font-size:.72rem;color:var(--soft);font-family:var(--mono);margin-top:2px}
+.step .acts{display:flex;flex-wrap:wrap;gap:6px}
+.badge{font-size:.65rem;font-family:var(--mono);padding:2px 7px;border-radius:4px;color:#fff;display:inline-block}
+.badge.act{background:var(--ok)}
+.badge.pas{background:var(--faint)}
+.badge.run{background:var(--warn)}
+.log{font-family:var(--mono);font-size:.72rem;max-height:140px;overflow:auto;background:#F7F9FC;padding:10px;border-radius:8px;line-height:1.6}
+.note{font-size:.78rem;color:var(--soft);margin-top:8px}
+.dm-row{display:flex;flex-wrap:wrap;gap:8px}
+.dm{font-size:.72rem;padding:6px 10px;border-radius:6px;border:1px solid var(--border);font-family:var(--mono)}
+.dm.on{background:#E8F8EF;border-color:#A8D5B5}
+.dm.off{background:#F0F0F0;color:var(--faint)}
+.dm.busy{background:#FFF3E0;border-color:#E0C36A}
+.stats{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;font-size:.8rem}
+.stats span{background:#F7F9FC;padding:6px 10px;border-radius:6px;font-family:var(--mono)}
+</style>
+</head>
+<body>
+<header class="header">
+  <div>
+    <h1>İş axını — Başlat / Bitir</h1>
+    <div class="sub">Seçimlər süzülür · irəliləyiş yadda qalır · QC məcburi</div>
+  </div>
+  <nav class="nav" style="display:flex;gap:8px;flex-wrap:wrap">
+    <a href="index.html">Ana səhifə</a>
+    <a href="mrp-planlama.html">Planlama</a>
+    <a href="is-axini.html">İş axını</a>
+    <a href="izleme.html">Toplu izləmə</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="telimat.html">Təlimat</a>
+  </nav>
+</header>
+<div class="wrap">
+  <div class="panel">
+    <h2>İş əmri / məhsul (yalnız bağlı siyahı)</h2>
+    <div class="controls">
+      <div>
+        <label>İş əmri №</label>
+        <select id="woSel" onchange="onWoChange()"></select>
+      </div>
+      <div>
+        <label>Məhsul</label>
+        <select id="productSel" onchange="onProductChange()"></select>
+        <div class="linked" id="linkHint" style="min-height:1.2rem">—</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;padding-top:1.35rem">
+        <button class="btn muted" type="button" onclick="clearFilters()">Hər ikisini təmizlə</button>
+        <button class="btn" type="button" onclick="resetCurrent()">Bu əmri sıfırla</button>
+        <button class="btn muted" type="button" onclick="clearTestStorage()" title="Brauzer tarixçəsi deyil">Sınaq: yaddaşı sil</button>
+      </div>
+    </div>
+    <div class="stats" id="stats"></div>
+    <p class="note">Tamamlanmış əmrlər açıq siyahıda gizlədilir (toplu izləmə + arxivdə qalır). «Bu əmri sıfırla» onu yenidən açıq edir. Sınaq üçün bütün lövhəni sıfırlamaq: «Sınaq: yaddaşı sil» — brauzer tarixçəsini silmək lazım deyil.</p>
+  </div>
+
+  <div class="panel">
+    <h2>İş mərkəzləri (bu əmr)</h2>
+    <div class="dm-row" id="dmRow"></div>
+  </div>
+  <div class="who" id="who">Görəv: —</div>
+  <div class="panel"><h2>Axın</h2><div class="flow" id="flow"></div></div>
+  <div class="panel"><h2>Jurnal</h2><div class="log" id="log"></div></div>
+</div>
+<script>
+const ROUTES = {
+  'HM.NSO.01.001': [
+    { em:'EM-KESIM', ad:'Çərçivə kəsimi', dm:'DM-10', rol:'Operator kəsim', qc:false },
+    { em:'EM-QAYNAQ', ad:'Çərçivə qaynağı', dm:'DM-20', rol:'Qaynaq ustası', qc:false },
+    { em:'EM-QC-CRK', ad:'Çərçivə keyfiyyət yoxlaması', dm:'DM-40', rol:'QC mütəxəssisi', qc:true },
+    { em:'EM-PCB', ad:'PCB montajı', dm:'DM-25', rol:'Elektronika ustası', qc:false },
+    { em:'EM-BOYA', ad:'Boyama', dm:'DM-35', rol:'Rəngsaz', qc:false },
+    { em:'EM-HDR', ad:'Hidravlik yığım', dm:'DM-30', rol:'Montaj ustası', qc:false },
+    { em:'EM-MONTAJ', ad:'Son montaj', dm:'DM-30', rol:'Montaj briqadası', qc:false },
+    { em:'EM-QC-SON', ad:'Yekun keyfiyyət təsdiqi', dm:'DM-40', rol:'QC mütəxəssisi', qc:true }
+  ],
+  'HM.KMP.01.001': [
+    { em:'EM-QAYNAQ', ad:'Qaynaq', dm:'DM-20', rol:'Qaynaq ustası', qc:false },
+    { em:'EM-QC-CRK', ad:'QC', dm:'DM-40', rol:'QC mütəxəssisi', qc:true },
+    { em:'EM-HDR', ad:'Hidravlik', dm:'DM-30', rol:'Montaj ustası', qc:false },
+    { em:'EM-MONTAJ', ad:'Montaj', dm:'DM-30', rol:'Montaj briqadası', qc:false },
+    { em:'EM-QC-SON', ad:'Yekun QC', dm:'DM-40', rol:'QC mütəxəssisi', qc:true }
+  ],
+  'HM.HDR.01.001': [
+    { em:'EM-QAYNAQ', ad:'Qaynaq', dm:'DM-20', rol:'Qaynaq ustası', qc:false },
+    { em:'EM-HDR', ad:'Hidravlik ×2', dm:'DM-30', rol:'Montaj ustası', qc:false },
+    { em:'EM-BOYA', ad:'Boyama', dm:'DM-35', rol:'Rəngsaz', qc:false },
+    { em:'EM-MONTAJ', ad:'Montaj', dm:'DM-30', rol:'Montaj briqadası', qc:false },
+    { em:'EM-QC-SON', ad:'Yekun QC', dm:'DM-40', rol:'QC mütəxəssisi', qc:true }
+  ]
+};
+const PRODUCT_AD = {
+  'HM.NSO.01.001': 'Nasos stansiyası — hazır məhsul',
+  'HM.KMP.01.001': 'Kompressor bloku — hazır məhsul',
+  'HM.HDR.01.001': 'Hidravlik modul — hazır məhsul'
+};
+const WORK_ORDERS = [
+  { wo:'IE-NSO-01', mehsul:'HM.NSO.01.001' },
+  { wo:'IE-NSO-02', mehsul:'HM.NSO.01.001' },
+  { wo:'IE-KMP-01', mehsul:'HM.KMP.01.001' },
+  { wo:'IE-HDR-01', mehsul:'HM.HDR.01.001' }
+];
+const STORE_KEY = 'stoxastik_is_axini_v2';
+const ARCHIVE_KEY = 'stoxastik_is_axini_archive';
+let filterMode = 'all'; // all | byWo | byProduct
+
+function loadStore(){ try{return JSON.parse(localStorage.getItem(STORE_KEY)||'{}');}catch(e){return{}} }
+function saveStore(all){
+  localStorage.setItem(STORE_KEY, JSON.stringify(all));
+  const summary = {};
+  Object.keys(all).forEach(wo=>{
+    const st=all[wo]; const steps=st.steps||[];
+    const run=steps.find(s=>s.st==='run'); const ready=steps.find(s=>s.st==='ready');
+    const done=steps.length&&steps.every(s=>s.st==='done');
+    const fail=steps.some(s=>s.st==='fail');
+    let status='Gözləyir';
+    if(done) status='Tamamlandı'; else if(fail) status='QC qaldı / dayandı';
+    else if(run) status='İcrada'; else if(ready) status='Növbədə';
+    const cur=run||ready;
+    summary[wo]={ mehsul:st.mehsul, ad:PRODUCT_AD[st.mehsul]||st.mehsul, status,
+      em:cur?cur.em:'—', ad_em:cur?cur.ad:'—', dm:cur?cur.dm:'—', rol:cur?cur.rol:'—',
+      doneCount:steps.filter(s=>s.st==='done').length, total:steps.length, updated:st.updated||null };
+  });
+  localStorage.setItem('stoxastik_is_axini_summary', JSON.stringify(summary));
+  // Bitmiş əmrləri tarixli arxivə yaz (sıfırlama silməsin)
+  try {
+    let arch = JSON.parse(localStorage.getItem(ARCHIVE_KEY)||'[]');
+    Object.keys(summary).forEach(wo=>{
+      if(summary[wo].status!=='Tamamlandı') return;
+      const already = arch.find(a=>a.wo===wo && a.updated===summary[wo].updated);
+      if(!already){
+        arch.unshift({wo, ...summary[wo], archivedAt: new Date().toISOString()});
+      }
+    });
+    arch = arch.slice(0,100);
+    localStorage.setItem(ARCHIVE_KEY, JSON.stringify(arch));
+  } catch(e){}
+}
+function freshSteps(mehsul){ return (ROUTES[mehsul]||[]).map((s,i)=>({...s, st:i===0?'ready':'wait'})); }
+function ensureWo(wo){
+  const all=loadStore();
+  const meta=WORK_ORDERS.find(w=>w.wo===wo);
+  if(!meta) return null;
+  if(!all[wo]){ all[wo]={mehsul:meta.mehsul, steps:freshSteps(meta.mehsul), log:[], updated:new Date().toISOString()}; saveStore(all); }
+  if(all[wo].mehsul!==meta.mehsul){ all[wo].mehsul=meta.mehsul; saveStore(all); }
+  return all[wo];
+}
+function isComplete(wo){
+  const st=loadStore()[wo];
+  if(!st||!st.steps||!st.steps.length) return false;
+  return st.steps.every(s=>s.st==='done');
+}
+function openOrders(){ return WORK_ORDERS.filter(w=>!isComplete(w.wo)); }
+
+function fillSelects(preferWo, preferProduct){
+  const woSel=document.getElementById('woSel');
+  const pSel=document.getElementById('productSel');
+  let orders = openOrders();
+  if(!orders.length) orders = WORK_ORDERS.slice(); // hamısı bitibsə hamısını göstər
+
+  if(filterMode==='byWo' && preferWo){
+    const m = WORK_ORDERS.find(w=>w.wo===preferWo);
+    orders = orders.filter(w=>w.wo===preferWo);
+    // product list: only that product
+    const products = m ? [m.mehsul] : [];
+    pSel.innerHTML = products.map(p=>`<option value="${p}">${p} — ${PRODUCT_AD[p]||''}</option>`).join('');
+    woSel.innerHTML = orders.map(w=>`<option value="${w.wo}">${w.wo}</option>`).join('');
+    woSel.value = preferWo;
+    if(m) pSel.value = m.mehsul;
+  } else if(filterMode==='byProduct' && preferProduct){
+    orders = orders.filter(w=>w.mehsul===preferProduct);
+    const products = [preferProduct];
+    pSel.innerHTML = products.map(p=>`<option value="${p}">${p} — ${PRODUCT_AD[p]||''}</option>`).join('');
+    woSel.innerHTML = orders.map(w=>`<option value="${w.wo}">${w.wo}</option>`).join('');
+    if(orders.length) woSel.value = preferWo && orders.some(w=>w.wo===preferWo) ? preferWo : orders[0].wo;
+    pSel.value = preferProduct;
+  } else {
+    // full open list
+    const products = [...new Set(orders.map(w=>w.mehsul))];
+    pSel.innerHTML = products.map(p=>`<option value="${p}">${p} — ${PRODUCT_AD[p]||''}</option>`).join('');
+    woSel.innerHTML = orders.map(w=>`<option value="${w.wo}">${w.wo}</option>`).join('');
+    if(preferWo && orders.some(w=>w.wo===preferWo)) woSel.value = preferWo;
+    const meta = WORK_ORDERS.find(w=>w.wo===woSel.value);
+    if(meta) pSel.value = meta.mehsul;
+  }
+
+  const meta = WORK_ORDERS.find(w=>w.wo===woSel.value);
+  document.getElementById('linkHint').textContent = meta
+    ? `${meta.wo} ↔ ${meta.mehsul} · ${PRODUCT_AD[meta.mehsul]||''}`
+    : '—';
+
+  // stats
+  const all = WORK_ORDERS;
+  const store = loadStore();
+  let started=0, running=0, done=0;
+  all.forEach(w=>{
+    const st=store[w.wo];
+    if(!st) return;
+    const steps=st.steps||[];
+    if(steps.every(s=>s.st==='done')) done++;
+    else if(steps.some(s=>s.st==='run')) running++;
+    else if(steps.some(s=>s.st!=='wait'||steps[0].st==='ready') && steps.some(s=>s.st==='done'||s.st==='run'||s.st==='ready')) {
+      if(steps.some(s=>s.st==='done'||s.st==='run')) started++;
+    }
+  });
+  // recount simply
+  started=0; running=0; done=0;
+  all.forEach(w=>{
+    const st=store[w.wo]; if(!st){return;}
+    const steps=st.steps||[];
+    if(!steps.length) return;
+    if(steps.every(s=>s.st==='done')) done++;
+    else if(steps.some(s=>s.st==='run')) running++;
+    else if(steps.some(s=>s.st==='done')) started++;
+    else if(steps[0].st==='ready' && !steps.some(s=>s.st==='done')) { /* only opened */ }
+  });
+  const given = all.length;
+  document.getElementById('stats').innerHTML =
+    `<span>Verilmiş əmr: <b>${given}</b></span>`+
+    `<span>İcrada: <b>${running}</b></span>`+
+    `<span>Başlanmış (davam): <b>${started}</b></span>`+
+    `<span>Tamam: <b>${done}</b></span>`+
+    `<span>Açıq siyahıda: <b>${openOrders().length}</b></span>`;
+}
+
+function currentWo(){ return document.getElementById('woSel').value; }
+function getState(){ return ensureWo(currentWo()); }
+function persist(mutator){
+  const all=loadStore(); const wo=currentWo();
+  if(!all[wo]) ensureWo(wo);
+  mutator(all[wo]);
+  all[wo].updated=new Date().toISOString();
+  saveStore(all);
+  render();
+}
+
+function clearFilters(){
+  filterMode='all';
+  fillSelects(null,null);
+  localStorage.setItem('stoxastik_is_axini_last_wo', currentWo());
+  ensureWo(currentWo());
+  render();
+}
+function onWoChange(){
+  filterMode='byWo';
+  const wo=currentWo();
+  localStorage.setItem('stoxastik_is_axini_last_wo', wo);
+  fillSelects(wo, null);
+  ensureWo(wo);
+  render();
+}
+function onProductChange(){
+  filterMode='byProduct';
+  const p=document.getElementById('productSel').value;
+  fillSelects(null, p);
+  ensureWo(currentWo());
+  localStorage.setItem('stoxastik_is_axini_last_wo', currentWo());
+  render();
+}
+function resetCurrent(){
+  if(!confirm('Bu iş əmrinin axını sıfırlansın? Yenidən açıq siyahıya düşəcək.')) return;
+  const all=loadStore(); const wo=currentWo();
+  const meta=WORK_ORDERS.find(w=>w.wo===wo);
+  if(!meta){ alert('İş əmri tapılmadı'); return; }
+  all[wo]={mehsul:meta.mehsul, steps:freshSteps(meta.mehsul), log:[`[${new Date().toLocaleTimeString('az-AZ')}] Axın sıfırlandı — yenidən açıq`], updated:new Date().toISOString()};
+  saveStore(all);
+  // Tamamlanmışdan çıxdı: filtri aç və bu əmri göstər
+  filterMode='all';
+  fillSelects(wo, null);
+  document.getElementById('woSel').value = wo;
+  filterMode='byWo';
+  fillSelects(wo, null);
+  localStorage.setItem('stoxastik_is_axini_last_wo', wo);
+  render();
+}
+function clearTestStorage(){
+  if(!confirm('SINAQ: Bu saytın iş əmri yaddaşı silinsin? (Brauzer tarixçəsi deyil — yalnız bu lövhə)')) return;
+  localStorage.removeItem(STORE_KEY);
+  localStorage.removeItem('stoxastik_is_axini_summary');
+  localStorage.removeItem('stoxastik_is_axini_archive');
+  localStorage.removeItem('stoxastik_is_axini_last_wo');
+  filterMode='all';
+  fillSelects(null,null);
+  ensureWo(currentWo());
+  render();
+  alert('Yaddaş təmizləndi. Bütün nümunə əmrlər yenidən açıqdır.');
+}
+
+function render(){
+  const st=getState(); if(!st) return;
+  const steps=st.steps; const wo=currentWo();
+  const cur=steps.find(s=>s.st==='run')||steps.find(s=>s.st==='ready');
+  const whoEl=document.getElementById('who');
+  if(steps.every(s=>s.st==='done')) whoEl.textContent=`İş əmri ${wo} tamamlandı ✓`;
+  else if(cur) whoEl.textContent=`${wo} · Görəv: ${cur.rol} · ${cur.em} (${cur.ad}) · ${cur.dm} · ${cur.st==='run'?'İCRADA':'NÖVBƏDƏ'}`;
+  else whoEl.textContent=wo+' · Görəv: —';
+
+  const dms={};
+  steps.forEach(s=>{ if(!dms[s.dm]) dms[s.dm]='off'; if(s.st==='run') dms[s.dm]='busy'; else if(s.st==='ready'&&dms[s.dm]!=='busy') dms[s.dm]='on'; });
+  document.getElementById('dmRow').innerHTML=Object.keys(dms).map(d=>{
+    const c=dms[d]; const lab=c==='busy'?'məşğul':(c==='on'?'hazır':'passiv');
+    return `<div class="dm ${c}">${d} · ${lab}</div>`;
+  }).join('');
+
+  document.getElementById('flow').innerHTML=steps.map((s,i)=>{
+    const cls=s.st==='done'?'done':(s.st==='run'||s.st==='ready'?'active':'wait');
+    const qc=s.qc?' qc-gate':'';
+    const badge=s.st==='done'?'<span class="badge act">bitdi</span>':s.st==='run'?'<span class="badge run">icrada</span>':s.st==='ready'?'<span class="badge act">növbədə</span>':s.st==='fail'?'<span class="badge" style="background:#B33A3A">QC qaldı</span>':'<span class="badge pas">gözlə</span>';
+    let acts='';
+    if(s.st==='ready'&&!s.qc) acts=`<button class="btn go" onclick="start(${i})">Başlat</button>`;
+    if(s.st==='ready'&&s.qc) acts=`<button class="btn qc" onclick="start(${i})">QC-yə qəbul</button>`;
+    if(s.st==='run'&&!s.qc) acts=`<button class="btn stop" onclick="finish(${i})">Bitir · devret</button>`;
+    if(s.st==='run'&&s.qc) acts=`<button class="btn go" onclick="qcPass(${i})">QC keçdi · devret</button><button class="btn bad" onclick="qcFail(${i})">QC qaldı</button>`;
+    return `<div class="step ${cls}${qc}"><div class="num">${i+1}</div><div><div class="t">${s.ad} ${badge}</div><div class="m">${s.em} · ${s.dm} · ${s.rol}${s.qc?' · KEYFİYYƏT MƏCBURİ':''}</div></div><div class="acts">${acts}</div></div>`;
+  }).join('');
+  document.getElementById('log').innerHTML=(st.log||[]).slice(0,40).join('<br>')||'—';
+  // refresh stats counts
+  const woVal=currentWo(); const pVal=document.getElementById('productSel').value;
+  // don't rebuild options mid-render; only stats line
+  const all=WORK_ORDERS; const store=loadStore();
+  let running=0,done=0,partial=0;
+  all.forEach(w=>{ const st=store[w.wo]; if(!st)return; const steps=st.steps||[]; if(!steps.length)return;
+    if(steps.every(s=>s.st==='done')) done++; else if(steps.some(s=>s.st==='run')) running++; else if(steps.some(s=>s.st==='done')) partial++; });
+  document.getElementById('stats').innerHTML=
+    `<span>Verilmiş: <b>${all.length}</b></span><span>İcrada: <b>${running}</b></span><span>Qismən: <b>${partial}</b></span><span>Tamam: <b>${done}</b></span><span>Açıq: <b>${openOrders().length}</b></span>`;
+}
+function start(i){ persist(st=>{ const s=st.steps[i]; if(s.st!=='ready')return; s.st='run'; st.log.unshift(`[${new Date().toLocaleTimeString('az-AZ')}] ${s.em} BAŞLADI · ${s.rol}`); }); }
+function finish(i){ persist(st=>{ const s=st.steps[i]; if(s.st!=='run')return; s.st='done'; const t=new Date().toLocaleTimeString('az-AZ'); st.log.unshift(`[${t}] ${s.em} BİTDİ`); if(i+1<st.steps.length){ st.steps[i+1].st='ready'; st.log.unshift(`[${t}] DEVRETME → ${st.steps[i+1].em}`); } else st.log.unshift(`[${t}] Axın tamamlandı`); }); }
+function qcPass(i){ persist(st=>{ const s=st.steps[i]; if(s.st!=='run')return; s.st='done'; const t=new Date().toLocaleTimeString('az-AZ'); st.log.unshift(`[${t}] ${s.em} QC KEÇDİ`); if(i+1<st.steps.length){ st.steps[i+1].st='ready'; st.log.unshift(`[${t}] DEVRETME → ${st.steps[i+1].em}`); } else st.log.unshift(`[${t}] Axın tamamlandı`); }); }
+function qcFail(i){ persist(st=>{ const s=st.steps[i]; if(s.st!=='run')return; s.st='fail'; const t=new Date().toLocaleTimeString('az-AZ'); st.log.unshift(`[${t}] ${s.em} QC QALDI`); for(let j=i-1;j>=0;j--){ if(!st.steps[j].qc){ st.steps[j].st='ready'; st.log.unshift(`[${t}] QAYTARMA → ${st.steps[j].em}`); break; } } }); }
+
+function init(){
+  const last=localStorage.getItem('stoxastik_is_axini_last_wo');
+  filterMode='all';
+  fillSelects(last, null);
+  if(last && [...document.getElementById('woSel').options].some(o=>o.value===last)){
+    document.getElementById('woSel').value=last;
+    filterMode='byWo';
+    fillSelects(last, null);
+  }
+  ensureWo(currentWo());
+  render();
+}
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Toplu izləmə — iş əmrləri · xətt · proses</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1B2430;--soft:#57626F;--faint:#8A94A0;--bg:#F0F3F7;--panel:#fff;--border:#D5DCE5;--plan:#1B3358;--ok:#1E7D46;--warn:#C47A00;--bad:#B33A3A;--teal:#0E7C86;--sans:'IBM Plex Sans',system-ui,sans-serif;--mono:'IBM Plex Mono',monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14px}
+.header{background:var(--panel);border-bottom:2px solid var(--ink);padding:12px 18px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:20}
+.header h1{font-size:1.1rem}
+.sub{font-size:.78rem;color:var(--soft)}
+.nav a,.btn{font-size:.78rem;text-decoration:none;color:var(--plan);border:1px solid var(--border);padding:7px 11px;border-radius:6px;background:#fff;cursor:pointer}
+.wrap{max-width:1100px;margin:0 auto;padding:14px 14px 40px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+@media(max-width:700px){.grid{grid-template-columns:1fr 1fr}}
+.kpi{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px}
+.kpi strong{display:block;font-family:var(--mono);font-size:1.2rem}
+.kpi em{font-style:normal;font-size:.72rem;color:var(--faint)}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px}
+.panel h2{font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;color:var(--faint);margin-bottom:10px}
+table{width:100%;border-collapse:collapse;font-size:.82rem}
+th,td{border:1px solid var(--border);padding:8px;text-align:left}
+th{background:#1B3358;color:#fff}
+.st-run{color:var(--warn);font-weight:700}
+.st-ok{color:var(--ok);font-weight:600}
+.st-bad{color:var(--bad);font-weight:700}
+.st-wait{color:var(--faint)}
+.note{font-size:.78rem;color:var(--soft);margin-top:8px}
+.dm-grid{display:flex;flex-wrap:wrap;gap:8px}
+.dm{font-family:var(--mono);font-size:.75rem;padding:8px 12px;border-radius:8px;border:1px solid var(--border)}
+.dm.busy{background:#FFF3E0;border-color:#E0C36A}
+.dm.free{background:#E8F8EF;border-color:#A8D5B5}
+.dm.idle{background:#F0F0F0;color:var(--faint)}
+.refresh{font-size:.75rem;color:var(--faint)}
+</style>
+</head>
+<body>
+<header class="header">
+  <div>
+    <h1>Toplu izləmə — rəhbərlik</h1>
+    <div class="sub">Hansı iş əmri icradadır · hansı proses / iş mərkəzi məşğuldur · hansı dayanıb</div>
+  </div>
+  <nav class="nav" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+    <a href="index.html">Ana səhifə</a>
+    <a href="mrp-planlama.html">Planlama</a>
+    <a href="is-axini.html">İş axını</a>
+    <a href="izleme.html">Toplu izləmə</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="telimat.html">Təlimat</a>
+    <button class="btn" onclick="refresh()">Yenilə</button>
+    <span class="refresh" id="ts">—</span>
+  </nav>
+</header>
+<div class="wrap">
+  <div class="grid" id="kpi"></div>
+  <div class="panel">
+    <h2>İş mərkəzləri (bütün açıq əmrlər üzrə)</h2>
+    <div class="dm-grid" id="dms"></div>
+  </div>
+  <div class="panel">
+    <h2>İş əmrləri</h2>
+    <div id="tbl"></div>
+    <p class="note">Operativ məlumat brauzerdədir. Rəsmi bitmə/saat <code>7_Fakt</code> Excel-ə blank C ilə yazılmalıdır — HTML avtomatik Excel yazmır.</p>
+  </div>
+  <div class="panel">
+    <h2>Bitmiş iş əmrləri (tarixli arxiv)</h2>
+    <div id="arch"></div>
+  </div>
+</div>
+<script>
+const ALL_DM = ['DM-10','DM-20','DM-25','DM-30','DM-35','DM-40'];
+
+function refresh(){
+  let summary = {};
+  try { summary = JSON.parse(localStorage.getItem('stoxastik_is_axini_summary')||'{}'); } catch(e){}
+  // also rebuild from full store if summary empty
+  let store = {};
+  try { store = JSON.parse(localStorage.getItem('stoxastik_is_axini_v2')||'{}'); } catch(e){}
+  if(Object.keys(summary).length===0 && Object.keys(store).length){
+    // rebuild light summary
+    Object.keys(store).forEach(wo=>{
+      const st = store[wo];
+      const steps = st.steps||[];
+      const run = steps.find(s=>s.st==='run');
+      const ready = steps.find(s=>s.st==='ready');
+      const done = steps.length && steps.every(s=>s.st==='done');
+      const fail = steps.some(s=>s.st==='fail');
+      let status = 'Gözləyir';
+      if(done) status='Tamamlandı';
+      else if(fail) status='QC qaldı / dayandı';
+      else if(run) status='İcrada';
+      else if(ready) status='Növbədə';
+      const cur = run||ready;
+      summary[wo] = {
+        mehsul: st.mehsul, ad: st.mehsul, status,
+        em: cur?cur.em:'—', ad_em: cur?cur.ad:'—', dm: cur?cur.dm:'—', rol: cur?cur.rol:'—',
+        doneCount: steps.filter(s=>s.st==='done').length, total: steps.length,
+        updated: st.updated
+      };
+    });
+  }
+
+  const rows = Object.keys(summary).map(wo=>({wo, ...summary[wo]}));
+  const icra = rows.filter(r=>r.status==='İcrada').length;
+  const novbe = rows.filter(r=>r.status==='Növbədə').length;
+  const dayandi = rows.filter(r=>r.status.indexOf('dayandı')>=0||r.status.indexOf('QALDI')>=0).length;
+  const bitdi = rows.filter(r=>r.status==='Tamamlandı').length;
+
+  document.getElementById('kpi').innerHTML = `
+    <div class="kpi"><strong>${rows.length}</strong><em>İş əmri (yadda)</em></div>
+    <div class="kpi"><strong class="st-run">${icra}</strong><em>İcrada</em></div>
+    <div class="kpi"><strong>${novbe}</strong><em>Növbədə</em></div>
+    <div class="kpi"><strong class="st-bad">${dayandi}</strong><em>Dayanıb / QC qaldı</em></div>`;
+
+  // DM occupancy from running steps
+  const busyDm = {};
+  rows.forEach(r=>{ if(r.status==='İcrada' && r.dm && r.dm!=='—') busyDm[r.dm] = (busyDm[r.dm]||[]).concat(r.wo); });
+  document.getElementById('dms').innerHTML = ALL_DM.map(dm=>{
+    const list = busyDm[dm];
+    if(list && list.length) return `<div class="dm busy">${dm} · MƏŞĞUL · ${list.join(', ')}</div>`;
+    return `<div class="dm free">${dm} · sərbəst</div>`;
+  }).join('');
+
+  if(!rows.length){
+    document.getElementById('tbl').innerHTML = '<p class="note">Hələ iş əmri yaddaşı yoxdur. Əvvəl <a href="is-axini.html">İş axını</a> səhifəsində bir əmri açın və Başlat edin.</p>';
+  } else {
+    let h = `<table><tr><th>İş əmri</th><th>Məhsul</th><th>Status</th><th>Cari proses</th><th>İş mərkəzi</th><th>Rol</th><th>İrəliləyiş</th><th>Yenilənmə</th><th></th></tr>`;
+    rows.sort((a,b)=>(b.updated||'').localeCompare(a.updated||''));
+    rows.forEach(r=>{
+      const cls = r.status==='İcrada'?'st-run':(r.status==='Tamamlandı'?'st-ok':(r.status.indexOf('dayandı')>=0||r.status.indexOf('qaldı')>=0?'st-bad':'st-wait'));
+      const t = r.updated ? new Date(r.updated).toLocaleString('az-AZ') : '—';
+      h += `<tr>
+        <td><b>${r.wo}</b></td>
+        <td>${r.mehsul}<br><span style="color:#57626F;font-size:.75rem">${r.ad||''}</span></td>
+        <td class="${cls}">${r.status}</td>
+        <td>${r.em}<br><span style="font-size:.75rem;color:#57626F">${r.ad_em||''}</span></td>
+        <td>${r.dm}</td>
+        <td>${r.rol}</td>
+        <td>${r.doneCount||0} / ${r.total||0}</td>
+        <td style="font-size:.75rem">${t}</td>
+        <td><a href="is-axini.html" onclick="localStorage.setItem('stoxastik_is_axini_last_wo','${r.wo}')">Aç</a></td>
+      </tr>`;
+    });
+    h += '</table>';
+    document.getElementById('tbl').innerHTML = h;
+  }
+  // archive
+  let arch=[];
+  try{ arch=JSON.parse(localStorage.getItem('stoxastik_is_axini_archive')||'[]'); }catch(e){}
+  if(!arch.length) document.getElementById('arch').innerHTML='<p class="note">Hələ tamamlanmış əmr arxivə düşməyib.</p>';
+  else {
+    let ha='<table><tr><th>İş əmri</th><th>Məhsul</th><th>Bitmə</th><th>İrəliləyiş</th></tr>';
+    arch.slice(0,30).forEach(a=>{
+      const t=a.updated?new Date(a.updated).toLocaleString('az-AZ'):'—';
+      ha+=`<tr><td><b>${a.wo}</b></td><td>${a.mehsul||''}</td><td>${t}</td><td>${a.doneCount||0}/${a.total||0}</td></tr>`;
+    });
+    ha+='</table>';
+    document.getElementById('arch').innerHTML=ha;
+  }
+  document.getElementById('ts').textContent = 'Yeniləndi: ' + new Date().toLocaleTimeString('az-AZ');
+}
+refresh();
+setInterval(refresh, 4000);
+</script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — CV · işçi · iş mərkəzi</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1B2430;--soft:#57626F;--faint:#8A94A0;--bg:#F0F3F7;--panel:#fff;--border:#D5DCE5;--plan:#1B3358;--ok:#1E7D46;--warn:#C47A00;--bad:#B33A3A;--teal:#0E7C86;--sans:'IBM Plex Sans',system-ui,sans-serif;--mono:'IBM Plex Mono',monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14px}
+.header{background:var(--panel);border-bottom:2px solid var(--ink);padding:12px 18px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.header h1{font-size:1.05rem}
+.sub{font-size:.78rem;color:var(--soft)}
+.nav a{font-size:.78rem;text-decoration:none;color:var(--plan);border:1px solid var(--border);padding:7px 11px;border-radius:6px;background:#fff}
+.wrap{max-width:1000px;margin:0 auto;padding:14px 14px 40px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+@media(max-width:700px){.grid{grid-template-columns:1fr 1fr}}
+.kpi{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px}
+.kpi strong{display:block;font-family:var(--mono);font-size:1.25rem}
+.kpi em{font-style:normal;font-size:.72rem;color:var(--faint)}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px}
+.panel h2{font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;color:var(--faint);margin-bottom:10px}
+table{width:100%;border-collapse:collapse;font-size:.8rem}
+th,td{border:1px solid var(--border);padding:6px 8px}
+th{background:#1B3358;color:#fff;text-align:left}
+.ok{color:var(--ok);font-weight:600}
+.bad{color:var(--bad);font-weight:600}
+.warn{color:var(--warn);font-weight:600}
+.bar-wrap{background:#EEF1F4;height:12px;border-radius:4px;min-width:60px}
+.bar{height:100%;border-radius:4px;background:var(--teal)}
+.bar.over{background:var(--bad)}
+.note{font-size:.78rem;color:var(--soft);margin-top:8px}
+</style>
+</head>
+<body>
+<header class="header">
+  <div>
+    <h1>Dashboard</h1>
+    <div class="sub">CV · işçi sayı · iş mərkəzi aktiv/passiv · dayanma · boşalma vaxtı · 5×8 təqvim konteksti</div>
+  </div>
+  <nav class="nav" style="display:flex;gap:8px;flex-wrap:wrap">
+    <a href="index.html">Ana səhifə</a>
+    <a href="mrp-planlama.html">Planlama</a>
+    <a href="is-axini.html">İş axını</a>
+    <a href="izleme.html">Toplu izləmə</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="telimat.html">Təlimat</a>
+  </nav>
+</header>
+<div class="wrap">
+  <div class="grid" id="kpi"></div>
+  <div class="panel">
+    <h2>İş mərkəzləri — status və tutum</h2>
+    <div id="wc"></div>
+    <p class="note">Aktiv = icrada/hazır · Passiv = bu növbədə iş yox · Dayanma (naladka) = ayarlama, təmizlik, alət/bıçaq dəyişimi, yeni partiya hazırlığı — effektiv iş saatına daxil deyil; ayrıca dəqiqə ilə izlənilir.</p>
+  </div>
+  <div class="panel">
+    <h2>İstehsal sabitliyi (CV) — fakt saat nümunəsi</h2>
+    <div id="cv"></div>
+    <p class="note">CV = σ / orta. &lt;10% sabit · 10–25% orta · &gt;25% yüksək dəyişkənlik (sadə qayda).</p>
+  </div>
+  <div class="panel">
+    <h2>İşçi / norma briqadası</h2>
+    <div id="crew"></div>
+  </div>
+</div>
+<script>
+
+function r4(x){const n=Number(x);if(!isFinite(n))return x;return Math.round(n*10000)/10000}
+function r4s(x){const n=Number(x);if(!isFinite(n))return '—';return (Math.round(n*10000)/10000).toFixed(4).replace(/\.?0+$/,'')}
+
+// Nümunə — Excel 7_Fakt / 3_Rota ilə uyğun ruhda
+const WC = [
+  { dm:'DM-10', ad:'Kəsim', status:'Aktiv', yuk:55, busy:4, plan:3.2, dayama:15, isci:2 },
+  { dm:'DM-20', ad:'Qaynaq', status:'Aktiv', yuk:78, busy:6, plan:4.1, dayama:40, isci:2 },
+  { dm:'DM-25', ad:'Elektronika', status:'Passiv', yuk:20, busy:0, plan:1.0, dayama:0, isci:1 },
+  { dm:'DM-30', ad:'Montaj', status:'Aktiv', yuk:92, busy:8, plan:5.5, dayama:25, isci:3 },
+  { dm:'DM-35', ad:'Boyama', status:'Dayanma', yuk:40, busy:2, plan:1.2, dayama:90, isci:1 },
+  { dm:'DM-40', ad:'QC', status:'Aktiv', yuk:35, busy:1, plan:1.5, dayama:5, isci:2 }
+];
+const FAKT_SAAT = [2.3,2.0,1.4,1.2,0.85,1.3,2.1,1.9,1.5,2.4,1.1,1.8];
+
+function mean(a){return a.reduce((x,y)=>x+y,0)/a.length}
+function stdev(a){const m=mean(a);return Math.sqrt(a.reduce((s,x)=>s+(x-m)**2,0)/(a.length||1))}
+function init(){
+  const m=mean(FAKT_SAAT), sd=stdev(FAKT_SAAT), cv=sd/m;
+  const aktiv=WC.filter(w=>w.status==='Aktiv').length;
+  const isci=WC.reduce((s,w)=>s+(w.status==='Passiv'?0:w.isci),0);
+  const dayama=WC.reduce((s,w)=>s+w.dayama,0);
+  document.getElementById('kpi').innerHTML=`
+    <div class="kpi"><strong>${r4(cv*100)}%</strong><em>CV (saat)</em></div>
+    <div class="kpi"><strong>${isci}</strong><em>Aktiv işçi (növbə)</em></div>
+    <div class="kpi"><strong>${aktiv}/${WC.length}</strong><em>Aktiv iş mərkəzi</em></div>
+    <div class="kpi"><strong>${dayama} dəq</strong><em>Dayanma cəmi</em></div>`;
+
+  let t=`<table><tr><th>İş_merkezi</th><th>Ad</th><th>Status</th><th>Yük %</th><th>Cari dolu (s)</th><th>Plan qalıq (s)</th><th>Boşalır</th><th>Dayanma</th><th>İşçi</th></tr>`;
+  WC.forEach(w=>{
+    const st=w.status==='Aktiv'?'ok':(w.status==='Dayanma'?'warn':'');
+    const free=w.busy; // saat sonra boşluq pəncərəsi
+    t+=`<tr>
+      <td>${w.dm}</td><td>${w.ad}</td>
+      <td class="${st}">${w.status}</td>
+      <td><div class="bar-wrap"><div class="bar ${w.yuk>85?'over':''}" style="width:${Math.min(w.yuk,100)}%"></div></div> ${w.yuk}%</td>
+      <td>${w.busy}</td><td>${w.plan}</td>
+      <td>~${free} s sonra · bitmə ~${r4(free+w.plan)} s</td>
+      <td>${w.dayama} dəq</td><td>${w.isci}</td>
+    </tr>`;
+  });
+  t+='</table>';
+  document.getElementById('wc').innerHTML=t;
+
+  const band=cv<0.1?'Sabit (<10%)':(cv<0.25?'Orta (10–25%)':'Yüksək (>25%)');
+  document.getElementById('cv').innerHTML=`
+    <table><tr><th>Göstərici</th><th>Dəyər</th></tr>
+    <tr><td>Orta fakt saat</td><td>${r4(m)}</td></tr>
+    <tr><td>σ (standart kənarlaşma)</td><td>${r4(sd)}</td></tr>
+    <tr><td>CV</td><td><b>${r4(cv*100)}%</b> — ${band}</td></tr>
+    <tr><td>Nümunə sayı</td><td>${FAKT_SAAT.length}</td></tr>
+    </table>`;
+
+  document.getElementById('crew').innerHTML=`
+    <table><tr><th>İş_merkezi</th><th>Norma işçi</th><th>Status</th><th>Qeyd</th></tr>
+    ${WC.map(w=>`<tr><td>${w.dm}</td><td>${w.isci}</td><td>${w.status}</td>
+      <td>${w.status==='Passiv'?'Briqada bu növbədə təyin olunmayıb':(w.status==='Dayanma'?'Dayanma müddətində gözləmə': 'İcrada')}</td></tr>`).join('')}
+    </table>`;
+}
+init();
+</script>
+</body>
+</html>

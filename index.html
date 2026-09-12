@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stoxastik İstehsal — İdarə paneli</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1B2430;--soft:#57626F;--faint:#8A94A0;--bg:#F0F3F7;--panel:#fff;--border:#D5DCE5;--plan:#1B3358;--ok:#1E7D46;--warn:#C47A00;--teal:#0E7C86;--sans:'IBM Plex Sans',system-ui,sans-serif;--mono:'IBM Plex Mono',monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);line-height:1.5}
+.wrap{max-width:960px;margin:0 auto;padding:32px 18px 56px}
+.badge{display:inline-block;font-family:var(--mono);font-size:.7rem;font-weight:600;background:var(--plan);color:#fff;padding:4px 10px;border-radius:4px;margin-bottom:12px}
+h1{font-size:1.55rem;margin-bottom:8px}
+.sub{color:var(--soft);font-size:.92rem;margin-bottom:20px;max-width:58ch}
+.meta{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:12px;font-size:.84rem;color:var(--soft)}
+.meta strong{color:var(--ink)}
+.meta ul{margin:6px 0 0 1.1rem}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
+@media(max-width:700px){.grid{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px;text-decoration:none;color:inherit;border-top:4px solid var(--c,var(--plan));display:block}
+.card:hover{box-shadow:0 6px 18px rgba(0,0,0,.07)}
+.card h2{font-size:1rem;margin-bottom:6px}
+.card p{font-size:.82rem;color:var(--soft);margin-bottom:8px}
+.card .go{font-family:var(--mono);font-size:.75rem;font-weight:600;color:var(--c,var(--plan))}
+.note{font-size:.78rem;color:var(--faint);margin-top:16px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="badge">İstehsal plan · MRP · iş axını · dashboard</div>
+  <h1>Stoxastik istehsal sistemi</h1>
+  <p class="sub">Kod: SINIF.QRUP.KAT.SIRA (HM/YF/XM/SM/QB/GD). Operativ izləmə brauzerdə; rəsmi plan–fakt və anbar məlumatı Excel blanklarından.</p>
+
+  <div class="grid">
+    <a class="card" style="--c:var(--teal)" href="mrp-planlama.html">
+      <h2>1. Planlama / MRP</h2>
+      <p>Məhsul seçimi, BOM partlatma, iş mərkəzi yükü, 5 gün × 8 saat növbə, yeni iş əmri.</p>
+      <span class="go">AÇ →</span>
+    </a>
+    <a class="card" style="--c:#6B5A9C" href="izleme.html">
+      <h2>2. Toplu izləmə (rəhbərlik)</h2>
+      <p>Hansı əmr icradadır, hansı xətt/proses aktiv və ya dayanıb — bir ekranda.</p>
+      <span class="go">AÇ →</span>
+    </a>
+    <a class="card" style="--c:var(--plan)" href="is-axini.html">
+      <h2>3. İş axını (flowchart)</h2>
+      <p>Başlat / Bitir təsdiqi, kimdə qalıb, QC məcburi keçid, xətt üzrə avtomatik devretmə.</p>
+      <span class="go">AÇ →</span>
+    </a>
+    <a class="card" style="--c:var(--ok)" href="dashboard.html">
+      <h2>4. Dashboard</h2>
+      <p>CV, işçi sayı, iş mərkəzi aktiv/passiv, dayanma, neçə saat sonra boşalır.</p>
+      <span class="go">AÇ →</span>
+    </a>
+    <a class="card" style="--c:var(--warn)" href="telimat.html">
+      <h2>5. Təlimat (SPC · plan-fakt · axın)</h2>
+      <p>CL, UCL, LCL, σ, CV, sərbəst qalıq, Başlat/Bitir/QC izahı.</p>
+      <span class="go">AÇ →</span>
+    </a>
+  </div>
+  <p class="note">Rəsmi rəqəmlər Excel-dədir (7_Fakt, 5_Saldo). İş axını lövhəsi brauzerdə yadda saxlanır; bitmiş əmrlər izləmədə tarixlə qalır.</p>
+</div>
+</body>
+</html>

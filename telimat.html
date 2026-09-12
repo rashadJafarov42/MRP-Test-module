@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Təlimat — SPC · plan-fakt · iş axını | Stoxastik istehsal</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1B2430;--soft:#57626F;--faint:#8A94A0;--bg:#F0F3F7;--panel:#fff;--border:#D5DCE5;--plan:#1B3358;--teal:#0E7C86;--ok:#1E7D46;--warn:#C47A00;--bad:#B33A3A;--ucl:#C0392B;--lcl:#2980B9;--cl:#2C3E50;--sans:'IBM Plex Sans',system-ui,sans-serif;--mono:'IBM Plex Mono',monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);line-height:1.65;font-size:15px}
+.header{background:var(--panel);border-bottom:2px solid var(--ink);padding:14px 20px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:20}
+.header h1{font-size:1.1rem}
+.sub{font-size:.8rem;color:var(--soft)}
+.nav a{font-size:.78rem;text-decoration:none;color:var(--plan);border:1px solid var(--border);padding:7px 11px;border-radius:6px;background:#fff}
+.wrap{max-width:820px;margin:0 auto;padding:20px 16px 56px}
+h2{font-size:1.05rem;margin:28px 0 10px;color:var(--plan);border-bottom:1px solid var(--border);padding-bottom:6px}
+h3{font-size:.92rem;margin:16px 0 8px}
+p,li{color:var(--ink);margin-bottom:8px}
+ul,ol{margin:0 0 12px 1.25rem}
+.box{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin:12px 0}
+.box.ok{border-left:4px solid var(--ok)}
+.box.warn{border-left:4px solid var(--warn)}
+.box.bad{border-left:4px solid var(--bad)}
+.box.teal{border-left:4px solid var(--teal)}
+table{width:100%;border-collapse:collapse;font-size:.88rem;margin:10px 0 14px}
+th,td{border:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:#1B3358;color:#fff}
+code{font-family:var(--mono);font-size:.84rem;background:#EEF1F5;padding:1px 5px;border-radius:3px}
+.muted{color:var(--soft);font-size:.88rem}
+.toc a{display:block;color:var(--plan);text-decoration:none;padding:4px 0;font-size:.9rem}
+.toc a:hover{text-decoration:underline}
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.tag{font-family:var(--mono);font-size:.72rem;padding:3px 8px;border-radius:4px;color:#fff}
+.tag.cl{background:var(--cl)}
+.tag.ucl{background:var(--ucl)}
+.tag.lcl{background:var(--lcl)}
+.tag.s2{background:var(--warn)}
+.tag.ok{background:var(--ok)}
+</style>
+</head>
+<body>
+<header class="header">
+  <div>
+    <h1>Təlimat</h1>
+    <div class="sub">SPC · plan–fakt · sərbəst qalıq · iş axını (Başlat/Bitir/QC) — planlamacı olmayan üçün də anlaşılan</div>
+  </div>
+  <nav class="nav" style="display:flex;gap:8px;flex-wrap:wrap">
+    <a href="index.html">Ana səhifə</a>
+    <a href="mrp-planlama.html">Planlama</a>
+    <a href="is-axini.html">İş axını</a>
+    <a href="izleme.html">Toplu izləmə</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="telimat.html">Təlimat</a>
+  </nav>
+</header>
+<div class="wrap">
+
+<div class="box teal">
+  <strong>Bu səhifə nə üçündür?</strong>
+  <p style="margin:6px 0 0">SPC, plan–fakt, sərbəst qalıq və iş axınının izahı; Excel-in gündəlik doldurulması və HTML ilə əlaqəsi.</p>
+</div>
+
+<div class="box toc">
+  <strong>Mündəricat</strong>
+  <a href="#spc">1. SPC — nədir, CL / UCL / LCL / σ</a>
+  <a href="#qaydalar">2. Sadə qaydalar (nə vaxt həyəcan)</a>
+  <a href="#planfakt">3. Plan–fakt və CV</a>
+  <a href="#serbest">4. Sərbəst qalıq (köhnə “ATP”)</a>
+  <a href="#axin">5. İş axını: Başlat · Bitir · QC</a>
+  <a href="#dayanma">5b. Dayanma (naladka)</a>
+  <a href="#excel">6. Excel vərəqləri ilə əlaqə</a>
+  <a href="#gunluk">7. Gündəlik Excel necə doldurulur</a>
+  <a href="#html-excel">8. HTML planlama / axın Excel-dən necə qidalanır</a>
+</div>
+
+<h2 id="spc">1. SPC — Statistik proses nəzarəti</h2>
+<p><strong>SPC</strong> prosesin “normal” fərqlənməsini “həyəcan doğuran” fərqlənmədən ayırmaq üçündür. Məqsəd: hər kiçik sapmada dayamaq yox, <em>sistemli</em> dəyişikliyi erkən görmək.</p>
+
+<div class="legend">
+  <span class="tag cl">CL — mərkəz xətt</span>
+  <span class="tag ucl">UCL — yuxarı hədd</span>
+  <span class="tag lcl">LCL — aşağı hədd</span>
+  <span class="tag s2">±2σ zona</span>
+  <span class="tag ok">±1σ zona</span>
+</div>
+
+<table>
+  <tr><th>Simvol</th><th>Azərbaycanca</th><th>Nə deməkdir</th></tr>
+  <tr><td><code>CL</code></td><td>Mərkəz xətt</td><td>Prosesin orta səviyyəsi (məs. orta fakt saat və ya orta ölçüm).</td></tr>
+  <tr><td><code>UCL</code></td><td>Yuxarı nəzarət həddi</td><td>Bundan yuxarı nöqtə «təsadüfi səs-küy»dən çox ola bilər — araşdırın.</td></tr>
+  <tr><td><code>LCL</code></td><td>Aşağı nəzarət həddi</td><td>Bundan aşağı eyni məntiq.</td></tr>
+  <tr><td><code>σ</code> (siqma)</td><td>Standart kənarlaşma</td><td>Nöqtələrin ortadan nə qədər «yayıldığı».</td></tr>
+  <tr><td><code>±1σ</code></td><td>1 siqma zolağı</td><td>Normalda nöqtələrin böyük hissəsi buradadır.</td></tr>
+  <tr><td><code>±2σ</code></td><td>2 siqma zolağı</td><td>Daha geniş «hələ ola bilər» zonası; tez-tez kənara çıxma xəbərdarlıqdır.</td></tr>
+  <tr><td><code>±3σ</code></td><td>3 siqma (klasik UCL/LCL)</td><td>Klassik nəzarət qrafikində hədlər adətən CL ± 3σ götürülür.</td></tr>
+</table>
+
+<div class="box">
+  <strong>2σ olanda nə olur? 3σ olanda?</strong>
+  <ul>
+    <li><strong>3σ həddi:</strong> Nöqtə həddən kənardırsa, əksər hallarda «xüsusi səbəb» axtarılır (alət, material partiyası, operator, ölçü xətası).</li>
+    <li><strong>2σ zonası:</strong> Hələ hədd deyil, amma bir neçə nöqtə ardıcıl 2σ-dən kənarda qalırsa, proses sürüşür — gözləməyin, yoxlayın.</li>
+    <li><strong>1σ daxilində sıxılma:</strong> Bəzən yaxşı sabitlikdir; bəzən ölçü «yuvarlaqlaşdırılır» və ya məlumat azdır — kontekstə baxın.</li>
+  </ul>
+</div>
+
+<h2 id="qaydalar">2. Sadə oxuma qaydaları</h2>
+<table>
+  <tr><th>№</th><th>Görüntü</th><th>Nə etmək</th></tr>
+  <tr><td>1</td><td>1 nöqtə UCL/LCL-dən kənar</td><td>Həmin növbə/iş əmrini açın: material, dəzgah, operator.</td></tr>
+  <tr><td>2</td><td>2/3 nöqtə ardıcıl eyni tərəfdə 2σ-dən kənar</td><td>Proses ortası sürüşür — norma və ya parametrə baxın.</td></tr>
+  <tr><td>3</td><td>Uzun zəncir hamısı CL-in bir tərəfində</td><td>Sistemli meyl (yeni partiya, yeni alət, yeni resept).</td></tr>
+  <tr><td>4</td><td>Getdikcə artan/azalan sıra</td><td>Trend — aşınma, isinmə, yorğunluq və s.</td></tr>
+  <tr><td>5</td><td>Birdən-birə «sakit» və ya «rəqs»</td><td>Ölçü üsulu və ya qeyd dəyişmiş ola bilər.</td></tr>
+</table>
+<p class="muted">SPC günahkarı avtomatik yazmır. O, <strong>hara baxmağı</strong> göstərir. Qərar sex + anbar + rota ilə verilir.</p>
+
+<h2 id="planfakt">3. Plan–fakt və CV</h2>
+<p><strong>Plan saat</strong> — normadan gələn gözlənti. <strong>Fakt saat</strong> — növbədə yazılan real vaxt. Hesabat və plan ekranlarında vaxt <strong>4 onluğa</strong> (məs. 1.2500) qədər yuvarlaqlaşdırılır.</p>
+<ul>
+  <li><code>Var_saat_faiz = (Fakt − Plan) / Plan</code></li>
+  <li><strong>Yaşıl</strong> ≈ |fərq| ≤ 5% · <strong>Narıncı</strong> 5–15% · <strong>Qırmızı</strong> &gt; 15% (fayldakı rəng qaydası)</li>
+</ul>
+<p><strong>CV (əmsal dəyişkənliyi)</strong> = σ / orta.</p>
+<table>
+  <tr><th>CV</th><th>Oxunuş (sadə)</th></tr>
+  <tr><td>&lt; 10%</td><td>Sabit proses</td></tr>
+  <tr><td>10–25%</td><td>Orta dəyişkənlik — izləyin</td></tr>
+  <tr><td>&gt; 25%</td><td>Yüksək dəyişkənlik — kök səbəb axtarın</td></tr>
+</table>
+<p class="muted">Dashboard-da CV nümunə fakt saat sırasından hesablanır; real işdə <code>7_Fakt</code> sütunlarından götürülür.</p>
+
+<h2 id="serbest">4. Sərbəst qalıq (köhnə “ATP” sözü)</h2>
+<p>Faylda ingiliscə ATP yoxdur. Azərbaycanca:</p>
+<ul>
+  <li><strong>Sərbəst</strong> — yeni iş əmrinə / tələbnaməyə <em>indi</em> verilə bilən miqdar</li>
+  <li><strong>Rezerv</strong> — başqa iş üçün tutulub, verilmir</li>
+  <li><strong>Blok_Zay / Blok_QC</strong> — yararsız və ya yoxlama bitməyib</li>
+  <li><strong>Serbest_kifayet</strong> — Sərbəst ≥ Min_stok → <em>Kifayət</em>, yoxsa <em>Çatışmır</em></li>
+</ul>
+<div class="box ok">
+  Planlamacı olmayan üçün bir cümlə: <strong>«Bu malı bu gün sexə vermək olarmı?»</strong> — cavab yalnız <em>Sərbəst</em> sütunundadır.
+</div>
+
+<h2 id="axin">5. İş axını: Başlat · Bitir · QC</h2>
+<p><code>is-axini.html</code> ekranında hər addım üçün:</p>
+<ol>
+  <li><strong>Başlat</strong> — iş mərkəzi aktiv/məşğul olur, görən rol görünür.</li>
+  <li><strong>Bitir · devret</strong> — addım bağlanır, növbəti avtomatik «növbədə» olur.</li>
+  <li><strong>QC addımı</strong> — Keyfiyyət mütləqdir: <em>QC keçdi · devret</em> və ya <em>QC qaldı</em> (axın dayanır, əvvəlki istehsal addımına qayıda bilər).</li>
+</ol>
+<div class="box warn">
+  <strong>Qayda:</strong> Növbəti əməliyyat əvvəlki bitmədən açılmır. Keyfiyyət qapısından keçmədən yekun montaja «tullanmaq» olmaz.
+</div>
+<p><strong>Kimdə qalıb?</strong> Səhifənin yuxarısındakı sarı/mavi zolaq: rol + əməliyyat + iş mərkəzi + status (gözləyir / icrada / bitdi).</p>
+
+<h2 id="dayanma">5b. Dayanma (naladka) nədir?</h2>
+<p><strong>Dayanma</strong> burada dəzgahın/xəttin <em>effektiv emal etmədiyi</em>, amma iş yerində vaxt aparan fasilədir: təmizlik, ayarlama, alət/frez/bıçaq dəyişimi, yeni məhsula keçid hazırlığı. Rus istehsalat dilində tez-tez «наладка» adlanır.</p>
+<ul>
+  <li><strong>Effektiv iş saatı</strong> — <code>Plan_saat</code> / <code>Fakt_saat</code> (7_Fakt): partiya üzrə emal/yığım vaxtı.</li>
+  <li><strong>Dayanma dəqiqəsi</strong> — ayrıca göstərici (dashboard nümunəsində); norma saatına qarışdırılmır.</li>
+  <li>Yeni iş əmri tutumu MRP-də <em>norma × ədəd + cari dolu</em> ilə hesablanır; dayanma isə «xətt niyə boş görünmür / niyə gecikir» izahı üçündür.</li>
+</ul>
+<p class="muted">HTML bitirmə düyməsi Excel-ə avtomatik yazmır. Növbə bitəndə blank C → <code>7_Fakt</code> mütləqdir; əks halda dashboard/Excel köhnə fakt üzrə qalır.</p>
+
+<h2 id="excel">6. Excel ilə əlaqə</h2>
+<table>
+  <tr><th>Vərəq</th><th>Nə saxlayır</th><th>Kim doldurur</th></tr>
+  <tr><td><code>1_Mallar</code></td><td>Kod, sinif, qrup, vahid, BOM-da?</td><td>Master data / anbar</td></tr>
+  <tr><td><code>2_BOM</code></td><td>Reseptura</td><td>Texnoloq / plan</td></tr>
+  <tr><td><code>3_Rota</code></td><td>Əməliyyat, iş mərkəzi, norma</td><td>Texnoloq</td></tr>
+  <tr><td><code>4_Hareket</code></td><td>Giriş-çıxış, sayım, zay</td><td>Anbar / blankdan köçürmə</td></tr>
+  <tr><td><code>5_Saldo</code></td><td>Sərbəst, rezerv, blok</td><td>Anbar</td></tr>
+  <tr><td><code>7_Fakt</code></td><td>Plan/fakt ədəd və saat</td><td>İstehsal növbə blankı</td></tr>
+  <tr><td><code>9_Blanklar</code></td><td>İmzalı formalar</td><td>Sex, anbar, QC</td></tr>
+  <tr><td><code>0_Luqet</code></td><td>Bütün sahələrin izahı</td><td>Oxumaq üçün</td></tr>
+</table>
+<p class="muted">HTML planlama və iş axını nümunə məlumatla işləyir; gündəlik həqiqət Excel + blanklardan gəlir. GitHub-a qoyduqda eyni qovluqda <code>index.html</code> ilə birlikdə olsun.</p>
+
+
+<h2 id="gunluk">7. Gündəlik Excel necə doldurulur</h2>
+<p>Əsas prinsip: <strong>əvvəl blank / sex-anbar qeydi → sonra master cədvələ köçürmə</strong>. Sarı xanalar əl ilə yazılır; yaşıl xanalar formuladır, toxunulmur.</p>
+
+<div class="box ok">
+  <strong>Günün qısa sırası</strong>
+  <ol style="margin:8px 0 0 1.2rem">
+    <li><strong>Səhər:</strong> <code>5_Saldo</code> — sərbəst kifayətdirmi? (Kifayət / Çatışmır)</li>
+    <li><strong>Material verilişi:</strong> <code>9_Blanklar</code> forma <b>B</b> (Tələbnamə) → imza → <code>4_Hareket</code> (<code>CIXIS_IST</code>, miqdar mənfi)</li>
+    <li><strong>Növbə boyu:</strong> forma <b>C</b> (İstehsal) → axşam <code>7_Fakt</code>-a eyni sütun adları ilə köçür</li>
+    <li><strong>Alış/qəbul olarsa:</strong> forma <b>A</b> → <code>4_Hareket</code> <code>GIRIS_ALIS</code> → <code>5_Saldo</code> artır</li>
+    <li><strong>Zay/QC:</strong> forma <b>D</b> → <code>CIXIS_ZAY</code> + <code>Blok_Zay</code></li>
+    <li><strong>Ayda bir / inventar:</strong> <code>6_Sayim</code> yalnız fərq + yeni mal → <code>1_Mallar</code> + <code>4_Hareket</code> SAYIM_*</li>
+  </ol>
+</div>
+
+<table>
+  <tr><th>Nə vaxt</th><th>Harada yazırsınız</th><th>Hara köçürülür</th></tr>
+  <tr><td>Material sexə</td><td>9_Blanklar · B</td><td>4_Hareket (CIXIS_IST) · 5_Saldo −</td></tr>
+  <tr><td>Növbə nəticəsi</td><td>9_Blanklar · C</td><td>7_Fakt (Plan_eded, Yararli_eded, saatlar…)</td></tr>
+  <tr><td>Alış anbara</td><td>9_Blanklar · A</td><td>4_Hareket (GIRIS_ALIS) · 5_Saldo +</td></tr>
+  <tr><td>Zay</td><td>9_Blanklar · D</td><td>4_Hareket (CIXIS_ZAY) · Blok_Zay</td></tr>
+  <tr><td>Yeni mal kodu</td><td>1_Mallar və ya 6_Sayim</td><td>Sinif/Qrup/Vahid yalnız siyahıdan</td></tr>
+  <tr><td>BOM dəyişikliyi</td><td>9_Blanklar · E (təsdiq)</td><td>2_BOM</td></tr>
+</table>
+
+<div class="box warn">
+  <strong>Qaydalar</strong>
+  <ul style="margin:6px 0 0 1.2rem">
+    <li>Blankdakı <strong>sütun adı = hədəf vərəqin sütun adı</strong> (köçürməni asanlaşdırır).</li>
+    <li><code>Hereket_Kodu</code> blankın yuxarısındadır (GIRIS_ALIS, CIXIS_IST…).</li>
+    <li>Çıxış hərəkətində miqdar <strong>mənfi (−)</strong> yazılır.</li>
+    <li><code>1_Mallar</code>-da Sinif, Qrup, Vahid, BOM_da, Mesul, Aktiv — <strong>yalnız açılan siyahıdan</strong>.</li>
+    <li>Yaşıl düstur xanalarına əl ilə rəqəm yazmayın.</li>
+  </ul>
+</div>
+
+<h2 id="html-excel">8. HTML Excel-dən necə qidalanır (indi və sonra)</h2>
+
+<h3>İndi (praktik, sadə)</h3>
+<p>Brauzerdəki <code>mrp-planlama.html</code>, <code>is-axini.html</code>, <code>dashboard.html</code> daxilində <strong>nümunə məlumat</strong> var (Excel kodları ilə eyni dil: HM.NSO…, DM-20…). Gündəlik iş belədir:</p>
+<ol>
+  <li>Excel-i doldurun / yeniləyin (yuxarıdakı gündəlik sıra).</li>
+  <li>Planlama və ya analiz üçün lazım olan sətirləri Excel-dən baxıb HTML seçimlərində eyni <strong>Mal_Kodu / Mehsul_Kodu / iş əmri</strong> ilə işləyin.</li>
+  <li>MRP ekranından «Yeni iş əmri (.xlsx)» düyməsi ilə çıxan faylı arxivə və ya <code>4_Hareket</code> / sex blankına istinad kimi saxlayın.</li>
+  <li>İş axınında Başlat/Bitir/QC — operativ lövhədir; növbənin rəsmi rəqəmləri yenə <code>7_Fakt</code>-a düşməlidir.</li>
+</ol>
+
+<div class="box teal">
+  <strong>Excel → HTML əl ilə «çəkmə» (bu gün üçün kifayət)</strong>
+  <ul style="margin:6px 0 0 1.2rem">
+    <li><code>5_Saldo</code> → Planlamada «Sərbəst kifayətdirmi?» ilə eyni məntiqi yoxlayın.</li>
+    <li><code>3_Rota</code> + <code>2_BOM</code> → MRP-də məhsul seçimi və tələbat ağacı.</li>
+    <li><code>7_Fakt</code> → Dashboard CV və plan–fakt rəngləri üçün mənbə.</li>
+    <li>İş əmri nömrəsi (<code>Is_emri</code>) hər yerdə eyni yazılsın ki, izləmə qırılmasın.</li>
+  </ul>
+</div>
+
+<h3>Sonra (GitHub / avtomatik)</h3>
+<p>Excel-i repoya qoyduqda növbəti inkişaf addımları belə planlaşdırılır:</p>
+<ol>
+  <li>Excel-i <code>.xlsx</code> olaraq eyni qovluqda saxlamaq (və ya export <code>.csv</code> vərəq-vərəq).</li>
+  <li>HTML-ə «Fayl seç / yüklə» ilə Excel oxuyucu (brauzerdə) vasitəsilə <code>1_Mallar</code>, <code>5_Saldo</code>, <code>7_Fakt</code> oxutmaq.</li>
+  <li>MRP və dashboard-un nümunə massivlərini bu yüklənmiş cədvəllərlə əvəz etmək.</li>
+</ol>
+<p class="muted">Bu avtomatik yükləmə hələ məcburi deyil: əvvəl gündəlik Excel intizamı otursun, sonra bir düymə ilə «Excel-dən oxu» əlavə olunur.</p>
+
+<div class="box">
+  <strong>Rəqəmlər</strong>
+  <p style="margin:6px 0 0">Plan və hesabatda vaxt/miqdar HTML-də <strong>ən çox 4 onluq</strong> (1/10000) göstərilir. Excel-də də eyni prinsip tövsiyə olunur.</p>
+</div>
+
+</div>
+</body>
+</html>
